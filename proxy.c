@@ -11,9 +11,68 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <filtros_req.h>
-
 char *hostname;
+
+void filtrarRequisicoes(){
+    
+    size_t len = 0;
+    char linha [1024];
+    ssize_t chars;
+    
+    int whitelisted = 0;
+    
+    /*Abrir arquivo de whitelist*/
+    
+    FILE *whitelist;
+    
+    whitelist = fopen("whitelist.txt", "r");
+    
+    
+    /*Percorrendo linha por linha do arquivo*/
+    while (fgets(linha, sizeof(linha), whitelist) != NULL)
+    {
+        /*Tirando \n caso haja*/
+        if (linha[strlen(linha) - 1] == '\n')
+            linha[strlen(linha) - 1] = '\0';
+        
+        /*Se arquivo estiver na whitelist, printar*/
+        if(strcmp(hostname, linha) == 0){
+            printf("\nEndereço %s está whitelisted.\n", hostname);
+            whitelisted = 1;
+        }
+        
+    }
+    
+    fclose(whitelist);
+    
+    /*Caso já tenha sido whitelisted, ignorar próximos passos*/
+    if(whitelisted != 1){
+
+        FILE *blacklist;
+        
+        blacklist = fopen("blacklist.txt", "r");
+
+        
+        /*Percorrendo linha por linha do arquivo*/
+        while (fgets(linha, sizeof(linha), blacklist) != NULL)
+        {
+            /*Tirando \n caso haja*/
+            if (linha[strlen(linha) - 1] == '\n')
+                linha[strlen(linha) - 1] = '\0';
+            
+            /*Se arquivo estiver na blacklist, printar*/
+            if(strcmp(hostname, linha) == 0){
+                printf("\nEndereço %s está blacklisted.\n", hostname);
+            }
+            
+        }
+        
+        fclose(blacklist);
+        
+        
+    }
+    
+}
 
 int main() {
 
@@ -52,7 +111,7 @@ int main() {
 
 		char * pch;
 		char * method;
-		//char * hostname;
+		/*char * hostname;*/
 
 		strcpy(client_message_copy, client_message);
 
