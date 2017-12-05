@@ -11,75 +11,77 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
+#include "cache.h"
+
 char *hostname;
 
-
 void filtrarRequisicoes(){
-    
+
     size_t len = 0;
     char linha [1024];
     ssize_t chars;
-    
+
+
     int whitelisted = 0;
-    
+
     //Abrir arquivo de whitelist
-    
+
     FILE *whitelist;
-    
+
     whitelist = fopen("whitelist.txt", "r");
-    
-    
+
+
     //Percorrendo linha por linha do arquivo
     while (fgets(linha, sizeof(linha), whitelist) != NULL)
     {
         //Tirando \n caso haja
         if (linha[strlen(linha) - 1] == '\n')
             linha[strlen(linha) - 1] = '\0';
-        
+
         //Se arquivo estiver na whitelist, printar
         if(strcmp(hostname, linha) == 0){
-            printf("\nEndere√ßo %s est√° whitelisted.\n", hostname);
+            printf("\nEndereÁo %s est· whitelisted.\n", hostname);
             whitelisted = 1;
         }
-        
+
     }
-    
+
     fclose(whitelist);
-    
-    //Caso j√° tenha sido whitelisted, ignorar pr√≥ximos passos
+
+    //Caso j· tenha sido whitelisted, ignorar prÛximos passos
     if(whitelisted != 1){
 
         FILE *blacklist;
-        
+
         blacklist = fopen("blacklist.txt", "r");
 
-        
+
         //Percorrendo linha por linha do arquivo
         while (fgets(linha, sizeof(linha), blacklist) != NULL)
         {
             //Tirando \n caso haja
             if (linha[strlen(linha) - 1] == '\n')
                 linha[strlen(linha) - 1] = '\0';
-            
+
             //Se arquivo estiver na blacklist, printar
             if(strcmp(hostname, linha) == 0){
-                printf("\nEndere√ßo %s est√° blacklisted.\n", hostname);
+                printf("\nEndereÁo %s est· blacklisted.\n", hostname);
             }
-            
-        }
-        
-        fclose(blacklist);
-        
-        
-    }
-    
-}
 
+        }
+
+        fclose(blacklist);
+
+
+    }
+
+}
 
 
 int main() {
 
 	int BUFFER_SIZE = 4096;
+	cache_size = 0;
 
 	int server_socket;
 	server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -89,9 +91,16 @@ int main() {
 	server_address.sin_port = htons(9874);
 	server_address.sin_addr.s_addr = INADDR_ANY;
 
-	bind(server_socket, (struct sockaddr*) &server_address, sizeof(server_address));
+	if(bind(server_socket, (struct sockaddr*) &server_address, sizeof(server_address)) < 0){
+        printf("Socket error\n");
+        exit(0);
+	}
 
-	listen(server_socket, 5);
+	if(listen(server_socket, 5 ) < 0){
+        printf("Socket error\n");
+        exit(0);
+	}
+
 
 	int client_socket;
 	struct sockaddr_in client_address;
@@ -99,7 +108,6 @@ int main() {
 
 	while (1)
 	{
-        
 		client_socket = accept(server_socket, (struct sockaddr*) &client_address, &addrlen);
 
 		char client_ip[addrlen];
@@ -138,9 +146,8 @@ int main() {
 
 		printf ("Method: %s\n", method);
 		printf ("Hostname: %s\n", hostname);
-        
-        filtrarRequisicoes();
 
+		filtrarRequisicoes();
 
 		struct hostent *he = gethostbyname(hostname);
 
@@ -152,7 +159,7 @@ int main() {
 		char ipstr[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, he->h_addr_list[0], ipstr, sizeof(ipstr));
 		printf("Endereco: %s\n\n", ipstr);
-        
+
 		int remote_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 		struct sockaddr_in remote_address;

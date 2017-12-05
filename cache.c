@@ -3,7 +3,7 @@
 void cacheAdd(char * buffer, int site_size, char* url) {
 
 
-    pthread_rwlock_wrlock(&lock);
+    //pthread_rwlock_wrlock(&lock);
     while(cache_size + site_size + sizeof(cache_object) >= MAX_CACHE_SIZE ){
         cacheRemove();
     }
@@ -20,7 +20,7 @@ void cacheAdd(char * buffer, int site_size, char* url) {
     cache_size +=  sizeof( cache_object ) + site_size + strlen( url ) + 1;
 
 
-    pthread_rwlock_unlock( &lock );
+    //pthread_rwlock_unlock( &lock );
     return;
 }
 
