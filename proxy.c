@@ -74,6 +74,34 @@ void filtrarRequisicoes(){
     
 }
 
+//Função que verifica os deny terms
+void verificarDenyTerms(char *resposta){
+    
+    FILE *denyTerms;
+    char linha [1024];
+    
+    denyTerms = fopen("deny_terms.txt", "r");
+    
+    /*Percorrendo linha por linha do arquivo*/
+    while (fgets(linha, sizeof(linha), denyTerms) != NULL)
+    {
+        /*Tirando \n caso haja*/
+        if (linha[strlen(linha) - 1] == '\n')
+            linha[strlen(linha) - 1] = '\0';
+        
+        //printf("linha %s", linha);
+        
+        /*Se o deny term aparecer na resposta, printar*/
+        if(strstr(resposta, linha) != NULL){
+            printf("O deny term %s apareceu na resposta.\n", linha);
+        }
+        
+    }
+    
+    fclose(denyTerms);
+}
+
+
 int main() {
 
 	int BUFFER_SIZE = 4096;
@@ -171,8 +199,10 @@ int main() {
 		}
 
 		/*recv(remote_socket, &response, sizeof(response), 0);*/
-		/*printf("Remote response:\n%s\n\n", response);*/
+		//printf("Remote response:\n%s\n\n", response);
 		/*send(client_socket, response, sizeof(response), 0);*/
+        
+        verificarDenyTerms(response);
 
 	}
 
